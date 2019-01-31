@@ -1,0 +1,68 @@
+Data structures of sharedbed
+
+
+
+Cavaliers(Set)
+( 
+    {
+        "storages" : [<StorageObj1>, <StorageObj2>],
+        "vcenters" : [<VcenterObj1], <VcenterObj2>],
+        "iohosts"  : [<IoHostObj1>, <IoHostObj2>],
+    },
+
+    {
+        "storages" : [<StorageObj1>, <StorageObj2>],
+        "vcenters" : [<VcenterObj1], <VcenterObj2>],
+        "iohosts"  : [<IoHostObj1>, <IoHostObj2>],
+    },
+)
+
+ReservedStoragePool(set)
+(
+    StorageObj(N), StorageObj(N+1), StorageObj(N+2), ..., StorageObj(M-1), StorageObj(M)
+)
+
+ReservedHostPool(set)
+(
+    HostObj(N), HostObj(N+1), HostObj(N+2), ..., HostObj(M-1), HostObj(M)
+)
+
+ReservedVcenterPool(set)
+(
+    VcenterObj(N), VcenterObj(N+1), VcenterObj(N+2), ..., VcenterObj(M-1), VcenterObj(M)
+)
+
+
+# Classes to be defined
+
+class Arena(Resource) # serves Restful request
+
+    def get():    # lookup
+    def post():   # modify
+    def put():    # insert
+    def delete(): # remove
+
+
+class SharedResource():
+
+
+class Storage(SharedResource):
+
+
+class Trident(Storage):
+
+
+class IoHost(SharedResource):
+
+
+class WindowsHost(IoHost):
+
+
+class LinuxHost(IoHost):
+
+
+class EsxHost(IoHost):
+
+
+class vCenter(IoHost):
+
