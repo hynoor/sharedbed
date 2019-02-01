@@ -2,7 +2,11 @@ from objects.linuxhost import LinuxHost
 from objects.esxhost import EsxHost
 from objects.windowshost import WindowsHost
 from objects.trident import Trident
+from objects.arena import Arena
 from pprint import pprint
+from flask import Flask
+from flask_restful import Api, Resource, reqparse
+
 
 def load_hosts():
     hosts = [{
@@ -24,6 +28,13 @@ def load_arrays():
 
 if __name__ == "__main__":
 
+    app = Flask(__name__)
+    api =Api(app)
+
+    api.add_resource(Arena, "/resource/<string:target>")
+    app.run(debug=True)
+
+    """
     dancers = []
     arraypool = []
     hostpool = []
@@ -46,4 +57,4 @@ if __name__ == "__main__":
 
     pprint(hostpool)
     pprint(arraypool)
-
+    """
