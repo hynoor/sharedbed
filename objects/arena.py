@@ -21,6 +21,8 @@ class Arena(Resource):
     builder = TestbedBuilder()
 
     def get(self, target):
+        if target == 'stats':
+            return self.report, 200
         if not self.operator.validate(target):
             return "Resource Not Found", 404
         if target in self.mappings.keys():
@@ -118,6 +120,13 @@ class Arena(Resource):
                 return "Host Not Found", 404
         del self.mappings[target]
         return "Resource Released", 200
+    
+    @property
+    def report(self):
+        output = "Storage Available: {}  {}\n".format(len(self.operator.storage_spare), self.operator.storage_spare)
+        output += "Linux Host Available: {}  {}".format(len(self.operator.linux_spare), self.operator.linux_spare)
+
+        return output
 
 
     def stats(self):
