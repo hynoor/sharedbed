@@ -32,6 +32,7 @@ if __name__ == "__main__":
     api =Api(app)
 
     api.add_resource(Arena, "/resource/<string:target>")
+    #api.add_resource(Stats, "/resource/<string:target>")
     app.run(debug=True)
 
     """
