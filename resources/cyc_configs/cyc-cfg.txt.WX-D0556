@@ -1,0 +1,75 @@
+################################################################################
+#config3
+
+.include "cyc-cfg.inc.core.txt"
+
+######################################################################
+# hardware related configuration
+#
+.include "cyc-cfg.inc.hw.warnado.txt"
+.include "cyc-cfg.inc.hw.disks.txt"
+.include "cyc-cfg.inc.lab_defaults.txt"
+
+######################################################################
+# system specific configuration
+#
+#### GENERAL
+export cyc_system_name="WX-D0556"
+export cyc_system_type="virtual"
+export cyc_system_vcenter="vcenter_hop_6.5"
+#### BMC
+export bmc_ip_a="10.231.47.85"
+export bmc_ip_b="10.231.47.86"
+export bmc_netmask="255.255.255.0"
+export bmc_gateway="10.231.47.1"
+#### PDU
+export pdu_ip="10.229.163.225"
+export pdu_port_a="A24"
+export pdu_port_b="B24"
+#### ESX
+export esx_ip_a="10.231.47.83"
+export esx_ip_b="10.231.47.84"
+export esx_netmask="255.255.255.0"
+export esx_gateway="10.231.47.1"
+export storage_ip_esx_a="10.231.53.103"
+export storage_ip_esx_b="10.231.53.104"
+export storage_ip_2_esx_a="10.231.53.105"
+export storage_ip_2_esx_b="10.231.53.106"
+export vmotion_ip_a="10.231.60.187"
+export vmotion_ip_b="10.231.60.188"
+export vmotion_netmask="255.255.254.0"
+export vmotion_gateway="10.231.60.1"
+export vmotion_vlanId="0"
+#### CVM
+export appliance_ip="10.231.47.88"
+export cluster_ip="10.231.47.87"
+export local_ip_a="10.231.47.89"
+export local_ip_b="10.231.47.90"
+export local_netmask="255.255.255.0"
+export local_gateway="10.231.47.1"
+export storage_ip_a="10.231.53.101"
+export storage_ip_b="10.231.53.102"
+export storage_discovery_ip=""
+export storage_netmask="255.255.255.0"
+export storage_gateway="10.231.53.1"
+export storage_vlanId="753"
+#### FIXUPS
+.include "cyc-cfg.inc.fixups.txt"
+#### SPECIFICS
+.include "cyc-cfg.inc.specifics.txt"
+
+######################################################################
+# developer configuration
+#
+#export DISPLAY="xxx"
+#export cyc_do_xterm="1"
+#export cyc_do_debug="1"
+#export cyc_do_deball="1"
+
+.include "cyc-cfg.inc.debug.txt"
+
+######################################################################
+
+.include "cyc-cfg.inc.epilogue.txt"
+
+################################################################################

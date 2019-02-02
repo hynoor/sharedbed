@@ -1,0 +1,59 @@
+################################################################################
+#config3
+
+.include "cyc-cfg.inc.core.txt"
+
+######################################################################
+# hardware related configuration
+#
+.include "cyc-cfg.inc.hw.bare_metal.txt"
+.include "cyc-cfg.inc.hw.warnado.txt"
+.include "cyc-cfg.inc.hw.disks.txt"
+.include "cyc-cfg.inc.lab_defaults.txt"
+
+######################################################################
+# system specific configuration
+#
+#### GENERAL
+export cyc_system_name="WX-D0599"
+export cyc_system_type="bare_metal"
+#### BMC
+export bmc_ip_a="10.231.48.220"
+export bmc_ip_b="10.231.48.221"
+export bmc_netmask="255.255.255.0"
+export bmc_gateway="10.231.48.1"
+#### ESX
+# NA
+#### CVM
+export appliance_ip="10.231.48.223"
+export cluster_ip="10.231.48.222"
+export local_ip_a="10.231.48.224"
+export local_ip_b="10.231.48.225"
+export local_netmask="255.255.255.0"
+export local_gateway="10.231.48.1"
+export storage_ip_a="10.231.54.149"
+export storage_ip_b="10.231.54.150"
+export storage_discovery_ip=""
+export storage_netmask="255.255.255.0"
+export storage_gateway="10.231.54.1"
+export storage_vlanId="754"
+#### FIXUPS
+.include "cyc-cfg.inc.fixups.txt"
+#### SPECIFICS
+.include "cyc-cfg.inc.specifics.txt"
+
+######################################################################
+# developer configuration
+#
+#export DISPLAY="xxx"
+#export cyc_do_xterm="1"
+#export cyc_do_debug="1"
+#export cyc_do_deball="1"
+
+.include "cyc-cfg.inc.debug.txt"
+
+######################################################################
+
+.include "cyc-cfg.inc.epilogue.txt"
+
+################################################################################

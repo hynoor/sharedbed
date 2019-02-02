@@ -1,0 +1,71 @@
+################################################################################
+#config3
+
+.include "cyc-cfg.inc.core.txt"
+
+######################################################################
+# hardware related configuration
+#
+.include "cyc-cfg.inc.hw.warnado.txt"
+.include "cyc-cfg.inc.hw.disks.txt"
+.include "cyc-cfg.inc.lab_defaults.txt"
+
+######################################################################
+# system specific configuration
+#
+#### GENERAL
+export cyc_system_name="WX-D0651"
+export cyc_system_type="virtual"
+export cyc_system_vcenter="vcenter_hop_6.5"
+#### BMC
+export bmc_ip_a="10.229.120.31"
+export bmc_ip_b="10.229.120.32"
+export bmc_netmask="255.255.252.0"
+export bmc_gateway="10.229.120.1"
+#### ESX
+export esx_ip_a="10.229.120.29"
+export esx_ip_b="10.229.120.30"
+export esx_netmask="255.255.252.0"
+export esx_gateway="10.229.120.1"
+export storage_ip_esx_a="10.229.128.25"
+export storage_ip_esx_b="10.229.128.26"
+export storage_ip_2_esx_a="10.229.128.27"
+export storage_ip_2_esx_b="10.229.128.28"
+export vmotion_ip_a="10.229.136.15"
+export vmotion_ip_b="10.229.136.16"
+export vmotion_netmask="255.255.252.0"
+export vmotion_gateway="10.229.136.1"
+export vmotion_vlanId="0"
+#### CVM
+export appliance_ip="10.229.120.34"
+export cluster_ip="10.229.120.33"
+export local_ip_a="10.229.120.35"
+export local_ip_b="10.229.120.36"
+export local_netmask="255.255.252.0"
+export local_gateway="10.229.120.1"
+export storage_ip_a="10.229.128.23"
+export storage_ip_b="10.229.128.24"
+export storage_discovery_ip=""
+export storage_netmask="255.255.252.0"
+export storage_gateway="10.229.128.1"
+export storage_vlanId="428"
+#### FIXUPS
+.include "cyc-cfg.inc.fixups.txt"
+#### SPECIFICS
+.include "cyc-cfg.inc.specifics.txt"
+
+######################################################################
+# developer configuration
+#
+#export DISPLAY="xxx"
+#export cyc_do_xterm="1"
+#export cyc_do_debug="1"
+#export cyc_do_deball="1"
+
+.include "cyc-cfg.inc.debug.txt"
+
+######################################################################
+
+.include "cyc-cfg.inc.epilogue.txt"
+
+################################################################################
