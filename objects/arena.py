@@ -65,9 +65,9 @@ class Arena(Resource):
                 build_params['type'] = args['type'].lower()
             if args['num_linux']:
                 if len(self.operator.linux_spare) >= int(args['num_linux']):
-                    for _ in range(int(args['num_linux'])):
-                        hostid = self.operator.linux_spare[0]
-                        self.operator.switch(hostid, 'linux', True)
+                    for i in range(int(args['num_linux'])):
+                        hostid = self.operator.linux_spare[i]
+                        #self.operator.switch(hostid, 'linux', True)
                         linux_iohosts.append(hostid)
                     if len(linux_iohosts) > 0:
                         build_params['linux_host'] = ",".join(linux_iohosts)
@@ -77,9 +77,9 @@ class Arena(Resource):
                     return "Linux Unvailable", 400
             if args['num_windows']:
                 if len(self.operator.windows_spare) >= int(args['num_windows']):
-                    for _ in range(int(args['num_windows'])):
-                        hostid = self.operator.windows_spare[0]
-                        self.operator.switch(hostid, 'windows', True)
+                    for i in range(int(args['num_windows'])):
+                        hostid = self.operator.windows_spare[i]
+                        #self.operator.switch(hostid, 'windows', True)
                         windows_iohosts.append(hostid)
                     if len(windows_iohosts) > 0:
                         build_params['windows_host'] = ",".join(windows_iohosts)
@@ -89,9 +89,9 @@ class Arena(Resource):
                     return "Windows Unvailable", 400
             if args['num_esx']:
                 if len(self.operator.esx_spare) >= int(args['num_esx']):
-                    for _ in range(int(args['num_esx'])):
-                        hostid = self.operator.esx_spare[0]
-                        self.operator.switch(hostid, 'esx', True)
+                    for i in range(int(args['num_esx'])):
+                        hostid = self.operator.esx_spare[i]
+                        #self.operator.switch(hostid, 'esx', True)
                         esx_iohosts.append(hostid)
                     if len(esx_iohosts) > 0:
                         build_params['esx_host'] = ",".join(esx_iohosts)
@@ -112,10 +112,16 @@ class Arena(Resource):
                     return "FC Unvailable", 400
                 if len(fc_iohosts) < int(args['num_fc']):
                     return "FC Unvailable", 400
-
-            pprint("****************{}**************".format(args))
+            # commit operations
             for n in names:
                 self.operator.switch(n, 'storage', True)
+            for n in linux_iohosts:
+                self.operator.switch(n, 'linux', True)
+                print("operation host: {}".format(n))
+            for n in windows_iohosts:
+                self.operator.switch(n, 'windows', True)
+            for n in esx_iohosts:
+                self.operator.switch(n, 'esx', True)
             self.mappings[target] = linux_iohosts + windows_iohosts + esx_iohosts
         except ValueError as e:
             return "ValueEroperatorr: {}".format(e), 500
@@ -128,7 +134,8 @@ class Arena(Resource):
             builder = TestbedBuilder(array=target, vcenter=vcenter, kwargs=build_params)
             response = builder.build()
         except Exception as e:
-            self.delete(target)
+            # rollback
+            self.delete(target) 
             return "Server Internal Error: {}".format(e), 500
 
         return Response(response, mimetype='text/xml')
