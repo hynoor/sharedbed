@@ -1,5 +1,7 @@
 import os, sys
+import flask
 from pprint import pprint
+from flask import Response
 from flask_restful import Resource, reqparse
 from resource_operator import ResourceOperator
 from testbed_builder import TestbedBuilder
@@ -39,10 +41,11 @@ class Arena(Resource):
 
     def post(self, target):
         parser = reqparse.RequestParser()
-        parser.add_argument("fc")
+        parser.add_argument("type")
         parser.add_argument("num_windows")
         parser.add_argument("num_linux")
         parser.add_argument("num_esx")
+        parser.add_argument("num_fc")
         args = parser.parse_args()
         self.stats()
         if not self.operator.validate(target):
@@ -52,14 +55,24 @@ class Arena(Resource):
             if self.operator.inuse(n):
                 return "Array Unavailable", 400
         # build hosts
-        iohosts = []
+        build_params = dict()
+        linux_iohosts = []
+        windows_iohosts = []
+        esx_iohosts = []
+        fc_iohosts = []
         try:
+            if args['type']:
+                build_params['type'] = args['type'].lower()
             if args['num_linux']:
                 if len(self.operator.linux_spare) >= int(args['num_linux']):
                     for _ in range(int(args['num_linux'])):
                         hostid = self.operator.linux_spare[0]
                         self.operator.switch(hostid, 'linux', True)
-                        iohosts.append(hostid)
+                        linux_iohosts.append(hostid)
+                    if len(linux_iohosts) > 0:
+                        build_params['linux_host'] = ",".join(linux_iohosts)
+                    elif int(args['num_linux']) == 0:
+                        pass
                 else:
                     return "Linux Unvailable", 400
             if args['num_windows']:
@@ -67,7 +80,11 @@ class Arena(Resource):
                     for _ in range(int(args['num_windows'])):
                         hostid = self.operator.windows_spare[0]
                         self.operator.switch(hostid, 'windows', True)
-                        iohosts.append(hostid)
+                        windows_iohosts.append(hostid)
+                    if len(windows_iohosts) > 0:
+                        build_params['windows_host'] = ",".join(windows_iohosts)
+                    elif int(args['num_windows']) == 0:
+                        pass
                 else:
                     return "Windows Unvailable", 400
             if args['num_esx']:
@@ -75,24 +92,46 @@ class Arena(Resource):
                     for _ in range(int(args['num_esx'])):
                         hostid = self.operator.esx_spare[0]
                         self.operator.switch(hostid, 'esx', True)
-                        iohosts.append(hostid)
+                        esx_iohosts.append(hostid)
+                    if len(esx_iohosts) > 0:
+                        build_params['esx_host'] = ",".join(esx_iohosts)
+                    elif int(args['num_esx']) == 0:
+                        pass
                 else:
                     return "ESXi Unvailable", 400
+            if args['num_fc']:
+                for name in names:
+                    for id in self.operator.lookup_storage(name).fc_hosts.split(','):
+                        if id != '':
+                            fc_iohosts.append(id)
+                if len(fc_iohosts) > 0:
+                    build_params['fc_host'] = ",".join(fc_iohosts)
+                elif int(args['num_fc']) == 0:
+                    pass
+                else:
+                    return "FC Unvailable", 400
+                if len(fc_iohosts) < int(args['num_fc']):
+                    return "FC Unvailable", 400
+
+            pprint("****************{}**************".format(args))
             for n in names:
                 self.operator.switch(n, 'storage', True)
-            self.mappings[target] = iohosts
-        except ValueEroperatorr as e:
+            self.mappings[target] = linux_iohosts + windows_iohosts + esx_iohosts
+        except ValueError as e:
             return "ValueEroperatorr: {}".format(e), 500
         
         # build testbed xml file
-        fchosts = []
         for id in target.split(','):
             vip = self.operator.lookup_storage(id).vcenter_id
-            fchosts.append(self.operator.lookup_storage(id).fc_hosts)
         vcenter = vip
-        builder = TestbedBuilder(array=target, vcenter=vip, iscsi_host=",".join(iohosts), fc_host=",".join(fchosts))
-        testbed = builder.build()
-        return unicode(testbed), 200
+        try:
+            builder = TestbedBuilder(array=target, vcenter=vcenter, kwargs=build_params)
+            response = builder.build()
+        except Exception as e:
+            self.delete(target)
+            return "Server Internal Error: {}".format(e), 500
+
+        return Response(response, mimetype='text/xml')
 
 
     def put(self, target):
