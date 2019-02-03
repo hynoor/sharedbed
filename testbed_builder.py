@@ -10,14 +10,14 @@ from pprint import pprint
 
 class TestbedBuilder():
 
-    def __init__(self, array=None, vcenter=None, iscsi_host=None, fc_host=None, \
-                 esx_host=None, cyc_configs_dir = '/opt/share/DevOpsCIT/configuration/devops-ctee-config/cyc_configs/'):
-        self.array = array
-        self.vcenter = vcenter
-        self.iscsi_host = iscsi_host
-        self.fc_host = fc_host
-        self.esx_host = esx_host
-        self.cyc_configs_dir = cyc_configs_dir
+    def __init__(self, array=None, vcenter=None, cyc_configs_dir = '/opt/share/DevOpsCIT/configuration/devops-ctee-config/cyc_configs/', kwargs={}):
+
+        self.build_info = kwargs
+        self.build_info['array'] = array
+        self.build_info['vcenter'] = vcenter
+        self.build_info['cyc-config-dir'] = cyc_configs_dir
+        
+        pprint(self.build_info)
 
     def get_cyc_config(self, path):
         """ Read the cyc_config file from given path
@@ -61,39 +61,25 @@ class TestbedBuilder():
         return (terminala, terminalb)
 
     def build(self):
-
-        self.build_info = {
-                'array'          : self.array,
-                'deploy-type'    : 'HCI',
-                'cyc-config-dir' : self.cyc_configs_dir,
-                'vcenter'        : self.vcenter,
-                'iscsi-host'     : self.iscsi_host,
-                'fc-host'        : self.fc_host,
-                'esx-host'       : self.esx_host,
-                }
         # starts to build
-        if (self.build_info['deploy-type'] == 'HCI') and ('vcenter' not in self.build_info):
-            print("ERR: parameter 'vcenter' is must when 'deploy-type' is HCI!")
-            exit(-1)
-
+        if self.build_info['type'] == 'hci' and 'vcenter' not in self.build_info.keys(): 
+            return ValueError("vcenter is required for HCI")
         root = Element('testbedinfo')
         root.set('version', '1.0')
         root.set('xmlns:xsi', "http://www.w3.org/2001/XMLSchema-instance")
         root.set('xmlns:xsd', "http://www.w3.org/2001/XMLSchema")
         root.set('doc_type', "testbed")
-
         cyclones= SubElement(root, 'cyclones')
         if self.build_info['array'] == '':
             print('ERR: parameter "vcenter" is required when delopy-type is HCI!')
             exit(-1)
         else:
-            pprint(self.build_info)
             for system_name in self.build_info['array'].split(','):
                 cyc_config_path = os.path.join(self.build_info['cyc-config-dir'], 'cyc-cfg.txt.' + system_name)
                 config = self.get_cyc_config(cyc_config_path)
                 cyclone = SubElement(cyclones, 'cyclone')
                 cyclone.set('name', system_name)
-                if self.build_info['deploy-type'] == 'HCI':
+                if self.build_info['type'] == 'hci':
                     cyclone.set('datacenter_name', 'DataCenter' + system_name[2:] )
                     cyclone.set('name', 'Cluster' + system_name[2:] )
                     cyclone.set('vcenter', self.build_info['vcenter'])
@@ -119,7 +105,7 @@ class TestbedBuilder():
                 node.set('id', 'a')
                 cyclone_controller = SubElement(node, 'cyclone_controller')
                 cyclone_controller.set('id', system_name + '-a')
-                if self.build_info['deploy-type'] == 'HCI':
+                if self.build_info['type'] == 'hci':
                     hypervisor_host = SubElement(node, 'hypervisor_host')
                     hypervisor_host.set('id', system_name + '-HOST-1')
                 terminal = SubElement(node, 'terminal')
@@ -135,7 +121,7 @@ class TestbedBuilder():
                 node.set('id', 'b')
                 cyclone_controller = SubElement(node, 'cyclone_controller')
                 cyclone_controller.set('id', system_name + '-b')
-                if self.build_info['deploy-type'] == 'HCI':
+                if self.build_info['type'] == 'hci':
                     hypervisor_host = SubElement(node, 'hypervisor_host')
                     hypervisor_host.set('id', system_name + '-HOST-2')
                 terminal = SubElement(node, 'terminal')
@@ -147,7 +133,7 @@ class TestbedBuilder():
                     terminal.set('port', tb['port'])
 
             # build vcenters
-            if 'vcenter' in self.build_info:
+            if 'vcenter' in self.build_info.keys():
                 for vc in self.build_info['vcenter'].split(','):
                     vcenters = SubElement(root, 'vcenters')
                     vcenter = SubElement(vcenters, 'vcenter')
@@ -179,7 +165,7 @@ class TestbedBuilder():
                 communication.set('ipv4_address', config['local_ip_b'])
                 communication.set('username', 'core')
                 communication.set('password', 'cycpass')
-                if self.build_info['deploy-type'] == 'HCI':
+                if self.build_info['type'] == 'hci':
                     esx_1 = SubElement(hosts, 'host')
                     esx_1.set('id', system_name + '-HOST-1')
                     communication = SubElement(esx_1, 'communication')
@@ -194,10 +180,30 @@ class TestbedBuilder():
                     communication.set('password', 'Password123!')
 
             # build iSCSI IO hosts
-            if 'iscsi-host' in self.build_info:
-                for idx, host_ip in enumerate(self.build_info['iscsi-host'].split(','), 1):
+            if 'linux_host' in self.build_info.keys():
+                for idx, host_ip in enumerate(self.build_info['linux_host'].split(','), 1):
                     ihost = SubElement(hosts, 'host')
-                    ihost.set('id', 'iSCSI-IOVM-' + str(idx))
+                    ihost.set('id', 'iSCSI-Linux-IOVM-' + str(idx))
+                    communication = SubElement(ihost, 'communication')
+                    communication.set('ipv4_address', host_ip)
+                    communication.set('username', 'root')
+                    communication.set('password', 'Password123!')
+                    communication.set('role', 'io_host')
+
+            if 'windows_host' in self.build_info.keys():
+                for idx, host_ip in enumerate(self.build_info['windows_host'].split(','), 1):
+                    ihost = SubElement(hosts, 'host')
+                    ihost.set('id', 'iSCSI-Windows-IOVM-' + str(idx))
+                    communication = SubElement(ihost, 'communication')
+                    communication.set('ipv4_address', host_ip)
+                    communication.set('username', 'Administrator')
+                    communication.set('password', 'Password123!')
+                    communication.set('role', 'io_host')
+
+            if 'esx_host' in self.build_info.keys():
+                for idx, host_ip in enumerate(self.build_info['esx_host'].split(','), 1):
+                    ihost = SubElement(hosts, 'host')
+                    ihost.set('id', 'iSCSI-ESX-IOVM-' + str(idx))
                     communication = SubElement(ihost, 'communication')
                     communication.set('ipv4_address', host_ip)
                     communication.set('username', 'root')
@@ -205,8 +211,8 @@ class TestbedBuilder():
                     communication.set('role', 'io_host')
 
             # build FC IO hosts
-            if 'fc-host' in self.build_info:
-                for idx, host_ip in enumerate(self.build_info['fc-host'].split(','), 1):
+            if 'fc_host' in self.build_info.keys():
+                for idx, host_ip in enumerate(self.build_info['fc_host'].split(','), 1):
                     fchost = SubElement(hosts, 'host')
                     fchost.set('id', 'FC-IOVM-' + str(idx))
                     communication = SubElement(fchost, 'communication')
