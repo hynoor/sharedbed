@@ -195,26 +195,3 @@ class Arena(Resource):
         pprint(self.mappings)
         print('-------------------------------------')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
