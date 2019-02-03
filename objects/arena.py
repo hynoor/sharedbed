@@ -2,6 +2,7 @@ import os, sys
 import flask
 from pprint import pprint
 from flask import Response
+from flask import make_response
 from flask_restful import Resource, reqparse
 from resource_operator import ResourceOperator
 from testbed_builder import TestbedBuilder
@@ -13,6 +14,7 @@ class Arena(Resource):
     # a mapping between arrays to hosts
     mappings = dict()
     """
+    sample data structure:
     {
         "WX-D05156"         : "10.109.211.231",
         "WX-D0515,WX-D0566" : "10.109.211.211,10.109.211.232",
@@ -42,10 +44,10 @@ class Arena(Resource):
     def post(self, target):
         parser = reqparse.RequestParser()
         parser.add_argument("type")
-        parser.add_argument("num_windows")
-        parser.add_argument("num_linux")
-        parser.add_argument("num_esx")
-        parser.add_argument("num_fc")
+        parser.add_argument("windows")
+        parser.add_argument("linux")
+        parser.add_argument("esx")
+        parser.add_argument("fc")
         args = parser.parse_args()
         self.stats()
         if not self.operator.validate(target):
@@ -63,54 +65,54 @@ class Arena(Resource):
         try:
             if args['type']:
                 build_params['type'] = args['type'].lower()
-            if args['num_linux']:
-                if len(self.operator.linux_spare) >= int(args['num_linux']):
-                    for i in range(int(args['num_linux'])):
+            if args['linux']:
+                if len(self.operator.linux_spare) >= int(args['linux']):
+                    for i in range(int(args['linux'])):
                         hostid = self.operator.linux_spare[i]
                         #self.operator.switch(hostid, 'linux', True)
                         linux_iohosts.append(hostid)
                     if len(linux_iohosts) > 0:
                         build_params['linux_host'] = ",".join(linux_iohosts)
-                    elif int(args['num_linux']) == 0:
+                    elif int(args['linux']) == 0:
                         pass
                 else:
                     return "Linux Unvailable", 400
-            if args['num_windows']:
-                if len(self.operator.windows_spare) >= int(args['num_windows']):
-                    for i in range(int(args['num_windows'])):
+            if args['windows']:
+                if len(self.operator.windows_spare) >= int(args['windows']):
+                    for i in range(int(args['windows'])):
                         hostid = self.operator.windows_spare[i]
                         #self.operator.switch(hostid, 'windows', True)
                         windows_iohosts.append(hostid)
                     if len(windows_iohosts) > 0:
                         build_params['windows_host'] = ",".join(windows_iohosts)
-                    elif int(args['num_windows']) == 0:
+                    elif int(args['windows']) == 0:
                         pass
                 else:
                     return "Windows Unvailable", 400
-            if args['num_esx']:
-                if len(self.operator.esx_spare) >= int(args['num_esx']):
-                    for i in range(int(args['num_esx'])):
+            if args['esx']:
+                if len(self.operator.esx_spare) >= int(args['esx']):
+                    for i in range(int(args['esx'])):
                         hostid = self.operator.esx_spare[i]
                         #self.operator.switch(hostid, 'esx', True)
                         esx_iohosts.append(hostid)
                     if len(esx_iohosts) > 0:
                         build_params['esx_host'] = ",".join(esx_iohosts)
-                    elif int(args['num_esx']) == 0:
+                    elif int(args['esx']) == 0:
                         pass
                 else:
                     return "ESXi Unvailable", 400
-            if args['num_fc']:
+            if args['fc']:
                 for name in names:
                     for id in self.operator.lookup_storage(name).fc_hosts.split(','):
                         if id != '':
                             fc_iohosts.append(id)
                 if len(fc_iohosts) > 0:
                     build_params['fc_host'] = ",".join(fc_iohosts)
-                elif int(args['num_fc']) == 0:
+                elif int(args['fc']) == 0:
                     pass
                 else:
                     return "FC Unvailable", 400
-                if len(fc_iohosts) < int(args['num_fc']):
+                if len(fc_iohosts) < int(args['fc']):
                     return "FC Unvailable", 400
             # commit operations
             for n in names:
@@ -146,15 +148,11 @@ class Arena(Resource):
 
 
     def delete(self, target):
-        self.stats()
-        if not self.operator.validate(target) or not self.mappings.keys():
-            return "Resource Not Found", 404
-        names = target.split(',')
-        for n in names:
-            if self.operator.inuse(n):
+        if target in self.mappings.keys():
+            for n in target.split(','):
                 self.operator.switch(n, 'storage', False)
-            else:
-                return "Resource Not Found", 404
+        else:
+            return "Resource Not Found", 404
         for n in self.mappings[target]:
             if n in self.operator.linux_inuse:
                 self.operator.switch(n, 'linux', False)
@@ -171,7 +169,6 @@ class Arena(Resource):
     def report(self):
         output = "Storage Available: {}  {}\n".format(len(self.operator.storage_spare), self.operator.storage_spare)
         output += "Linux Host Available: {}  {}".format(len(self.operator.linux_spare), self.operator.linux_spare)
-
         return output
 
 

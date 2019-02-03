@@ -16,8 +16,6 @@ class TestbedBuilder():
         self.build_info['array'] = array
         self.build_info['vcenter'] = vcenter
         self.build_info['cyc-config-dir'] = cyc_configs_dir
-        
-        pprint(self.build_info)
 
     def get_cyc_config(self, path):
         """ Read the cyc_config file from given path
