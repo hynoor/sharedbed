@@ -41,6 +41,25 @@ class ResourceOperator():
         for a in self.storages:
             self.storage_resources[a['id']] = Trident(a['id'], a['fc_hosts'], a['vcenter'])
             self.storage_bitmap[a['id']] = False
+    
+
+    def add_storage(self, storage_info):
+        self.storage_resource[storage_info['id']] = Trident(storage_info)
+        self.storage_bitmap[storage_info['id']] = False
+
+    def add_host(self, host_info):
+        if h['os'] == 'linux':
+            self.iohost_resources[host_info['id']] = LinuxHost(host_info['id'], host_info['iqn'])
+            self.linux_bitmap[host_info['id']] = False
+        elif h['os'] == 'esx':
+            self.iohost_resources[host_info['id']] = EsxHost(host_info['id'], host_info['iqn'])
+            self.esx_bitmap[host_info['id']] = False
+        elif h['os'] == 'windows':
+            self.iohost_resources[host_info['id']] = WindowsHost(host_info['id'], host_info['iqn'])
+            self.windows_bitmap[host_info['id']] = False
+
+    def remove_storage(self, id):
+        del self.iohost_resource[host_info['id']]
 
 
     def lookup_storage(self, object_id):
