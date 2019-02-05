@@ -43,23 +43,36 @@ class ResourceOperator():
             self.storage_bitmap[a['id']] = False
     
 
-    def add_storage(self, storage_info):
-        self.storage_resource[storage_info['id']] = Trident(storage_info)
-        self.storage_bitmap[storage_info['id']] = False
+    def add_storage(self, id , vcenter, fc_hosts):
+        self.storage_resources[id] = Trident(id, vcenter, fc_hosts)
+        self.storage_bitmap[id] = False
 
-    def add_host(self, host_info):
-        if h['os'] == 'linux':
-            self.iohost_resources[host_info['id']] = LinuxHost(host_info['id'], host_info['iqn'])
-            self.linux_bitmap[host_info['id']] = False
-        elif h['os'] == 'esx':
-            self.iohost_resources[host_info['id']] = EsxHost(host_info['id'], host_info['iqn'])
-            self.esx_bitmap[host_info['id']] = False
-        elif h['os'] == 'windows':
-            self.iohost_resources[host_info['id']] = WindowsHost(host_info['id'], host_info['iqn'])
-            self.windows_bitmap[host_info['id']] = False
 
     def remove_storage(self, id):
-        del self.iohost_resource[host_info['id']]
+        del self.storage_resources[id]
+        del self.storage_bitmap[id]
+
+
+    def add_host(self, id, iqn, os):
+        if os == 'linux':
+            self.iohost_resources[id] = LinuxHost(id, iqn)
+            self.linux_bitmap[id] = False
+        elif os == 'esx':
+            self.iohost_resources[id] = EsxHost(id, iqn)
+            self.esx_bitmap[id] = False
+        elif os == 'windows':
+            self.iohost_resources[id] = WindowsHost('id', 'iqn')
+            self.windows_bitmap[host_info['id']] = False
+
+
+    def remove_host(self, id):
+        if id in self.linux_bitmap.keys():
+            del self.linux_bitmap[id]
+        elif id in self.windows_bitmap.keys():
+            del self.windows_bitmap[id]
+        elif id in self.esx_bitmap.keys():
+            del self.esx_bitmap[id]
+        del self.iohost_resources[id]
 
 
     def lookup_storage(self, object_id):

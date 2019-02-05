@@ -5,11 +5,12 @@ class Storage(SharedResource):
 
     def __init__ (self, id, fchosts):
         SharedResource.__init__(self, id)
-        self.fc_hosts = fchosts
+        self.fc_hosts = []
         self.fc_host_objs = []
-
-        for fc_host in fchosts:
-            self.fc_host_objs.append(IOHost(fc_host))
+        if fchosts: 
+            for fc_host in fchosts.split(','):
+                self.fc_host_objs.append(IOHost(fc_host))
+                self.fc_hosts.append(fc_host)
 
     @property
     def fc_host_objs():

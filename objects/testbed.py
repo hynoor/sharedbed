@@ -1,5 +1,6 @@
 import os, sys
 import flask
+import settings
 from pprint import pprint
 from flask import Response
 from flask import make_response
@@ -21,14 +22,14 @@ class Testbed(Resource):
         "WX-D0517,WX-D0518" : "10.109.211.11,10.109.211.31",
     }
     """
-    operator = ResourceOperator()
     builder = TestbedBuilder()
+    operator = settings.resource_operator
 
     def get(self, target):
         if target == 'stats':
             return self.report, 200
         if not self.operator.validate(target):
-            return "Resource Not Found", 404
+            return "ERROR: Resource Not Found", 404
         if target in self.mappings.keys():
             return "Resource In Use: array:{} <---> hosts:{}".format(target, self.mappings[target]), 200
         names = target.split(',')
@@ -51,7 +52,7 @@ class Testbed(Resource):
         args = parser.parse_args()
         self.stats()
         if not self.operator.validate(target):
-            return "Array Not Found", 404
+            return "ERROR: Array Not Found", 404
         names = target.split(',')
         for n in names:
             if self.operator.inuse(n):
